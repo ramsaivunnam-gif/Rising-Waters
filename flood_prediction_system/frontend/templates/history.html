@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+{% block title %}Historical Records — FloodSense{% endblock %}
+{% block meta_description %}Browse historical rainfall and flood records by region and year, with trend and frequency charts.{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+  <div class="container">
+
+    <div class="row mb-4">
+      <div class="col-lg-8 anim-fade-up">
+        <div class="eyebrow">Historical Data</div>
+        <h1 class="section-title">44 years of rainfall & flood records</h1>
+        <p class="section-lead">Filter by region to see the underlying data the models were trained on, alongside rainfall and water-level trends.</p>
+      </div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="glass-card glass-card-pad-sm mb-4 anim-fade-up">
+      <div class="row g-3 filter-bar align-items-end">
+        <div class="col-md-4">
+          <label class="form-label-custom" for="historySubdivisionFilter">Region</label>
+          <select class="form-select form-select-custom" id="historySubdivisionFilter">
+            <option value="">All Regions</option>
+            <option value="KERALA">Kerala</option>
+            <option value="COASTAL ANDHRA PRADESH">Coastal Andhra Pradesh</option>
+            <option value="ASSAM & MEGHALAYA">Assam &amp; Meghalaya</option>
+            <option value="WEST BENGAL">West Bengal</option>
+            <option value="BIHAR">Bihar</option>
+            <option value="TAMIL NADU">Tamil Nadu</option>
+            <option value="GUJARAT REGION">Gujarat Region</option>
+            <option value="MADHYA MAHARASHTRA">Madhya Maharashtra</option>
+            <option value="EAST UTTAR PRADESH">East Uttar Pradesh</option>
+            <option value="ODISHA">Odisha</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label-custom" for="historyYearFromFilter">From Year</label>
+          <input type="number" class="form-control form-control-custom" id="historyYearFromFilter" placeholder="1980" min="1980" max="2023">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label-custom" for="historyYearToFilter">To Year</label>
+          <input type="number" class="form-control form-control-custom" id="historyYearToFilter" placeholder="2023" min="1980" max="2023">
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-primary-glow w-100" id="applyHistoryFiltersBtn">Apply</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row g-4 mb-4">
+      <div class="col-lg-7 anim-fade-up">
+        <div class="glass-card glass-card-pad h-100">
+          <h6 class="text-muted-custom mb-3" style="font-family: var(--font-mono); font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase;">Rainfall vs. Water Level Trend</h6>
+          <canvas id="historyTrendChart" data-chart="rainfall-trend" height="240"></canvas>
+        </div>
+      </div>
+      <div class="col-lg-5 anim-fade-up">
+        <div class="glass-card glass-card-pad h-100">
+          <h6 class="text-muted-custom mb-3" style="font-family: var(--font-mono); font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase;">Flood Frequency by Region</h6>
+          <canvas id="floodFrequencyChart" data-chart="flood-frequency" height="240"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="glass-card glass-card-pad anim-fade-up">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="text-muted-custom mb-0" style="font-family: var(--font-mono); font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase;">Records</h6>
+        <span class="chip" id="recordCountChip">Loading…</span>
+      </div>
+      <div style="overflow-x: auto;">
+        <table class="table-glass" id="historyTable">
+          <thead>
+            <tr>
+              <th>Region</th>
+              <th>Year</th>
+              <th>Annual Rainfall</th>
+              <th>Monsoon Rainfall</th>
+              <th>Water Level (m)</th>
+              <th>Threshold (m)</th>
+              <th>Flood?</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody">
+            <tr><td colspan="7" class="text-center text-muted-custom py-4">Loading historical records…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <button class="btn btn-ghost-custom" id="historyPrevPageBtn">← Previous</button>
+        <span class="text-muted-custom mono" id="historyPageIndicator" style="font-size:0.82rem;">Page 1</span>
+        <button class="btn btn-ghost-custom" id="historyNextPageBtn">Next →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script>
+  (function () {
+    "use strict";
+
+    const PAGE_SIZE = 10;
+    let currentPage = 1;
+    let allRecords = [];
+
+    function demoHistoryRecords() {
+      const subdivisions = ["KERALA", "COASTAL ANDHRA PRADESH", "ASSAM & MEGHALAYA", "WEST BENGAL", "BIHAR",
+        "TAMIL NADU", "GUJARAT REGION", "MADHYA MAHARASHTRA", "EAST UTTAR PRADESH", "ODISHA"];
+      const thresholds = { KERALA: 4.2, "COASTAL ANDHRA PRADESH": 3.8, "ASSAM & MEGHALAYA": 4.5, "WEST BENGAL": 4.0, BIHAR: 3.6, "TAMIL NADU": 3.2, "GUJARAT REGION": 3.0, "MADHYA MAHARASHTRA": 2.9, "EAST UTTAR PRADESH": 3.4, ODISHA: 3.9 };
+      const records = [];
+      subdivisions.forEach((sub) => {
+        for (let year = 2014; year <= 2023; year++) {
+          const annual = Math.round(900 + Math.random() * 1400);
+          const monsoon = Math.round(annual * (0.55 + Math.random() * 0.2));
+          const threshold = thresholds[sub];
+          const level = Math.round((threshold * 0.75 + (Math.random() - 0.5) * threshold * 0.5) * 100) / 100;
+          records.push({
+            subdivision: sub, year, annual_rainfall: annual, monsoon_rainfall: monsoon,
+            river_water_level_m: Math.max(level, 0.2), flood_threshold_m: threshold,
+            flood_occurred: level >= threshold,
+          });
+        }
+      });
+      return records.sort((a, b) => b.year - a.year);
+    }
+
+    function renderTablePage() {
+      const tbody = document.getElementById("historyTableBody");
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const pageRecords = allRecords.slice(start, start + PAGE_SIZE);
+
+      if (!pageRecords.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted-custom py-4">No records match these filters.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = pageRecords.map((r) => `
+        <tr>
+          <td>${titleCase(r.subdivision)}</td>
+          <td class="mono">${r.year}</td>
+          <td class="mono">${r.annual_rainfall} mm</td>
+          <td class="mono">${r.monsoon_rainfall} mm</td>
+          <td class="mono">${Number(r.river_water_level_m).toFixed(2)} m</td>
+          <td class="mono">${Number(r.flood_threshold_m).toFixed(1)} m</td>
+          <td>${r.flood_occurred
+            ? '<span class="risk-badge risk-severe"><span class="dot"></span> Yes</span>'
+            : '<span class="risk-badge risk-low"><span class="dot"></span> No</span>'}
+          </td>
+        </tr>
+      `).join("");
+
+      const totalPages = Math.max(Math.ceil(allRecords.length / PAGE_SIZE), 1);
+      document.getElementById("historyPageIndicator").textContent = `Page ${currentPage} of ${totalPages}`;
+      document.getElementById("recordCountChip").textContent = `${allRecords.length} records`;
+    }
+
+    function titleCase(str) {
+      return str.replace(/\w\S*/g, (t) => t.charAt(0).toUpperCase() + t.substr(1).toLowerCase());
+    }
+
+    async function loadRecords(filters = {}) {
+      const params = new URLSearchParams();
+      if (filters.subdivision) params.set("subdivision", filters.subdivision);
+      if (filters.yearFrom) params.set("year_from", filters.yearFrom);
+      if (filters.yearTo) params.set("year_to", filters.yearTo);
+
+      const response = await window.FloodAPI.get(`/history?${params.toString()}`);
+      if (response.ok && response.data && Array.isArray(response.data.records)) {
+        allRecords = response.data.records;
+      } else {
+        allRecords = demoHistoryRecords().filter((r) => {
+          if (filters.subdivision && r.subdivision !== filters.subdivision) return false;
+          if (filters.yearFrom && r.year < parseInt(filters.yearFrom, 10)) return false;
+          if (filters.yearTo && r.year > parseInt(filters.yearTo, 10)) return false;
+          return true;
+        });
+        if (!response.ok) {
+          window.showToast("Backend API unreachable — showing demo historical data.", "info");
+        }
+      }
+      currentPage = 1;
+      renderTablePage();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadRecords();
+
+      document.getElementById("applyHistoryFiltersBtn").addEventListener("click", () => {
+        loadRecords({
+          subdivision: document.getElementById("historySubdivisionFilter").value,
+          yearFrom: document.getElementById("historyYearFromFilter").value,
+          yearTo: document.getElementById("historyYearToFilter").value,
+        });
+      });
+
+      document.getElementById("historyPrevPageBtn").addEventListener("click", () => {
+        if (currentPage > 1) { currentPage--; renderTablePage(); }
+      });
+      document.getElementById("historyNextPageBtn").addEventListener("click", () => {
+        const totalPages = Math.max(Math.ceil(allRecords.length / PAGE_SIZE), 1);
+        if (currentPage < totalPages) { currentPage++; renderTablePage(); }
+      });
+    });
+  })();
+</script>
+{% endblock %}

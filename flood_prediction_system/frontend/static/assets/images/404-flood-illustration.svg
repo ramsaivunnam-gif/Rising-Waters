@@ -1,0 +1,17 @@
+<svg width="360" height="300" viewBox="0 0 360 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="notFoundWater" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#21C7C0" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#0D5D58" stop-opacity="0.7"/>
+    </linearGradient>
+  </defs>
+  <text x="180" y="140" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="96" font-weight="700" fill="rgba(255,255,255,0.06)">404</text>
+  <path d="M20 210 Q 60 190 100 210 T 180 210 T 260 210 T 340 210 V 260 H 20 Z" fill="url(#notFoundWater)"/>
+  <path d="M20 205 Q 60 185 100 205 T 180 205 T 260 205 T 340 205" fill="none" stroke="#56E5DE" stroke-width="2.5" opacity="0.8"/>
+  <circle cx="120" cy="150" r="3" fill="#56E5DE" opacity="0.6"/>
+  <circle cx="240" cy="165" r="2.5" fill="#21C7C0" opacity="0.5"/>
+  <circle cx="180" cy="145" r="2" fill="#56E5DE" opacity="0.4"/>
+  <g transform="translate(150,60)">
+    <path d="M20 3c5 7 10 12 10 18a10 10 0 1 1-20 0c0-6 5-11 10-18z" fill="#E8425A" opacity="0.85"/>
+  </g>
+</svg>

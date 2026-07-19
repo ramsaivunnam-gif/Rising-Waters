@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Run a Prediction — FloodSense{% endblock %}
+{% block meta_description %}Enter rainfall data for a region and get an instant flood risk classification and predicted river water level.{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+  <div class="container">
+
+    <div class="row mb-4">
+      <div class="col-lg-8 anim-fade-up">
+        <div class="eyebrow">New Prediction</div>
+        <h1 class="section-title">Enter a rainfall reading</h1>
+        <p class="section-lead">Fill in the region and rainfall figures below. FloodSense will run the classifier and regressor and return a full risk breakdown.</p>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <!-- ===================== FORM ===================== -->
+      <div class="col-lg-7 anim-fade-up">
+        <div class="glass-card glass-card-pad">
+          <form id="predictForm" novalidate>
+
+            <div class="mb-3">
+              <label class="form-label-custom" for="subdivisionInput">
+                <img src="{{ url_for('static', filename='assets/icons/location-pin.svg') }}" width="14" height="14" alt="" style="filter:invert(0.7);"> Region / Subdivision
+              </label>
+              <select class="form-select form-select-custom" id="subdivisionInput" name="subdivision" required>
+                <option value="" selected disabled>Select a region…</option>
+                <option value="KERALA">Kerala</option>
+                <option value="COASTAL ANDHRA PRADESH">Coastal Andhra Pradesh</option>
+                <option value="ASSAM & MEGHALAYA">Assam &amp; Meghalaya</option>
+                <option value="WEST BENGAL">West Bengal</option>
+                <option value="BIHAR">Bihar</option>
+                <option value="TAMIL NADU">Tamil Nadu</option>
+                <option value="GUJARAT REGION">Gujarat Region</option>
+                <option value="MADHYA MAHARASHTRA">Madhya Maharashtra</option>
+                <option value="EAST UTTAR PRADESH">East Uttar Pradesh</option>
+                <option value="ODISHA">Odisha</option>
+              </select>
+              <div class="invalid-feedback-custom">Select the region this reading is for.</div>
+            </div>
+
+            <div class="row">
+              <div class="col-sm-6 mb-3">
+                <label class="form-label-custom" for="yearInput">Year</label>
+                <input type="number" class="form-control form-control-custom" id="yearInput" name="year" min="1980" max="2035" value="2026" required>
+                <div class="invalid-feedback-custom">Enter a year between 1980 and 2035.</div>
+              </div>
+              <div class="col-sm-6 mb-3">
+                <label class="form-label-custom" for="monthInput">Month</label>
+                <select class="form-select form-select-custom" id="monthInput" name="month" required>
+                  <option value="1">January</option><option value="2">February</option>
+                  <option value="3">March</option><option value="4">April</option>
+                  <option value="5">May</option><option value="6" selected>June</option>
+                  <option value="7">July</option><option value="8">August</option>
+                  <option value="9">September</option><option value="10">October</option>
+                  <option value="11">November</option><option value="12">December</option>
+                </select>
+                <div class="invalid-feedback-custom">Enter a month between 1 and 12.</div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label-custom" for="annualRainfallInput">Annual Rainfall (mm)</label>
+              <input type="number" step="0.1" class="form-control form-control-custom" id="annualRainfallInput" name="annual_rainfall" min="0" max="6000" placeholder="e.g. 1450" required>
+              <div class="form-hint">Total expected rainfall for the year in this region.</div>
+              <div class="invalid-feedback-custom">Enter annual rainfall between 0 and 6000 mm.</div>
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label-custom" for="monsoonRainfallInput">Monsoon-Season Rainfall (mm)</label>
+              <input type="number" step="0.1" class="form-control form-control-custom" id="monsoonRainfallInput" name="monsoon_rainfall" min="0" max="4000" placeholder="e.g. 820" required>
+              <div class="invalid-feedback-custom">Enter monsoon-season rainfall between 0 and 4000 mm.</div>
+            </div>
+            <div class="mb-4">
+              <input type="range" class="range-slider" id="monsoonRainfallSlider" min="0" max="4000" step="10" value="0">
+              <div class="d-flex justify-content-between">
+                <span class="form-hint">0 mm</span>
+                <span class="form-hint mono" id="monsoonRainfallDisplay">0 mm</span>
+                <span class="form-hint">4000 mm</span>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary-glow btn-lg-custom w-100">
+              Analyze Flood Risk
+            </button>
+            <p class="form-hint text-center mt-3 mb-0">
+              Results call the live prediction API. If it's unavailable, an offline demo estimate is shown instead — clearly labeled as such.
+            </p>
+          </form>
+        </div>
+      </div>
+
+      <!-- ===================== SIDE INFO ===================== -->
+      <div class="col-lg-5 anim-fade-up">
+        <div class="glass-card glass-card-pad mb-4">
+          <div class="card-icon-wrap">
+            <img src="{{ url_for('static', filename='assets/icons/gauge.svg') }}" width="22" height="22" alt="" style="filter:invert(0.85) sepia(1) saturate(3) hue-rotate(140deg);">
+          </div>
+          <h5>What you'll get</h5>
+          <ul class="text-muted-custom" style="font-size:0.9rem; padding-left: 1.1rem;">
+            <li class="mb-2">A flood risk tier: Low, Moderate, High, or Severe</li>
+            <li class="mb-2">A flood probability score from the classifier</li>
+            <li class="mb-2">A projected river water level from the regressor</li>
+            <li>Recommended actions matched to the risk tier</li>
+          </ul>
+        </div>
+
+        <div class="glass-card glass-card-pad">
+          <div class="card-icon-wrap" style="background: linear-gradient(145deg, rgba(245,185,66,0.22), rgba(245,185,66,0.05)); border-color: rgba(245,185,66,0.25); color: var(--color-risk-moderate);">
+            <img src="{{ url_for('static', filename='assets/icons/alert-triangle.svg') }}" width="22" height="22" alt="" style="filter:invert(0.85) sepia(1) saturate(3) hue-rotate(320deg);">
+          </div>
+          <h5>Not an official warning</h5>
+          <p class="text-muted-custom" style="font-size:0.88rem;">
+            FloodSense is a decision-support tool trained on historical patterns.
+            Always follow guidance from your local meteorological department
+            during an active weather event.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/predict.js') }}"></script>
+{% endblock %}

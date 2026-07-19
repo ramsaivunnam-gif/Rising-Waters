@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% block title %}FloodSense — AI Flood Risk Prediction{% endblock %}
+{% block meta_description %}Predict flood risk from rainfall data using AI classification and regression models. Real-time river water-level forecasting and early warning insights.{% endblock %}
+
+{% block content %}
+
+<!-- ============================== HERO ============================== -->
+<section class="section-tight">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6 anim-fade-left">
+        <div class="eyebrow">Rainfall-to-Risk Intelligence</div>
+        <h1 class="section-title" style="font-size: clamp(2.2rem, 4.2vw, 3.4rem);">
+          Know the water's next move — <span style="color:var(--color-primary);">before it rises.</span>
+        </h1>
+        <p class="section-lead mb-4">
+          FloodSense pairs a flood-risk classifier with a river water-level
+          regressor, trained on decades of monsoon rainfall patterns, to turn
+          a single rainfall reading into an actionable risk call.
+        </p>
+        <div class="d-flex flex-wrap gap-3 mb-4">
+          <a href="/predict" class="btn btn-primary-glow btn-lg-custom">
+            Run a Prediction
+          </a>
+          <a href="/performance" class="btn btn-ghost-custom btn-lg-custom">
+            View Model Performance
+          </a>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="chip"><span class="pulse-dot" style="width:6px;height:6px;background:#34D399;display:inline-block;"></span> 10 regions covered</span>
+          <span class="chip">44 years of data</span>
+          <span class="chip">Dual ML models</span>
+        </div>
+      </div>
+
+      <div class="col-lg-6 anim-fade-right">
+        <img src="{{ url_for('static', filename='assets/images/hero-gauge-illustration.svg') }}" alt="Illustration of a river water-level gauge rising toward a flood threshold, with rainfall and risk-level data readouts" class="hero-illustration anim-float">
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wave-divider">
+  <svg viewBox="0 0 1200 48" preserveAspectRatio="none">
+    <path class="animated" d="M0 24 Q 150 4 300 24 T 600 24 T 900 24 T 1200 24"></path>
+  </svg>
+</div>
+
+<!-- ============================== STATS ============================== -->
+<section class="section-tight section-bg-panel">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-6 col-lg-3">
+        <div class="glass-card stat-card hoverable reveal">
+          <div class="card-icon-wrap">
+            <img src="{{ url_for('static', filename='assets/icons/database.svg') }}" width="22" height="22" alt="" style="filter:invert(0.85) sepia(1) saturate(3) hue-rotate(140deg);">
+          </div>
+          <div class="stat-value"><span data-count-to="440" data-duration="1200">0</span></div>
+          <div class="stat-label">Historical Records</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="glass-card stat-card hoverable reveal">
+          <div class="card-icon-wrap">
+            <img src="{{ url_for('static', filename='assets/icons/target.svg') }}" width="22" height="22" alt="" style="filter:invert(0.85) sepia(1) saturate(3) hue-rotate(140deg);">
+          </div>
+          <div class="stat-value"><span data-count-to="89.1" data-decimals="1" data-suffix="%">0</span></div>
+          <div class="stat-label">Classifier Accuracy</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="glass-card stat-card hoverable reveal">
+          <div class="card-icon-wrap">
+            <img src="{{ url_for('static', filename='assets/icons/chart-line.svg') }}" width="22" height="22" alt="" style="filter:invert(0.85) sepia(1) saturate(3) hue-rotate(140deg);">
+          </div>
+          <div class="stat-value"><span data-count-to="0.87" data-decimals="2">0</span></div>
+          <div class="stat-label">Regressor R² Score</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="glass-card stat-card hoverable reveal">
+          <div class="card-icon-wrap">
+            <img src="{{ url_for('static', filename='assets/icons/gauge.svg') }}" width="22" height="22" alt="" style="filter:invert(0.85) sepia(1) saturate(3) hue-rotate(140deg);">
+          </div>
+          <div class="stat-value"><span data-count-to="10" data-duration="900">0</span></div>
+          <div class="stat-label">Regions Monitored</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== FEATURES ============================== -->
+<section class="section">
+  <div class="container">
+    <div class="row mb-5">
+      <div class="col-lg-7 reveal">
+        <div class="eyebrow">How it works</div>
+        <h2 class="section-title">One reading in, a full risk picture out</h2>
+        <p class="section-lead">
+          Enter rainfall figures for a region and month; FloodSense runs them
+          through both models and returns a risk category, a probability, and
+          a projected river water level against the local flood threshold.
+        </p>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-3">
+        <div class="glass-card glass-card-pad hoverable reveal h-100">
+          <div class="card-icon-wrap">
+            <img src="{{ url_for('static', filename='assets/icons/raindrop.svg') }}" width="24" height="24" alt="" style="filter:invert(0.85) sepia(1) saturate(3) hue-rotate(140deg);">
+          </div>
+          <h5 class="mb-2">Rainfall Input</h5>
+          <p class="text-muted-custom" style="font-size:0.9rem;">Enter monsoon and annual rainfall for any of 10 covered regions.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="glass-card glass-card-pad hoverable reveal h-100">
+          <div class="card-icon-wrap">
+            <img src="{{ url_for('static', filename='assets/icons/cpu.svg') }}" width="24" height="24" alt="" style="filter:invert(0.85) sepia(1) saturate(3) hue-rotate(140deg);">
+          </div>
+          <h5 class="mb-2">Dual Model Inference</h5>
+          <p class="text-muted-custom" style="font-size:0.9rem;">A classifier flags flood risk while a regressor projects the water level.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="glass-card glass-card-pad hoverable reveal h-100">
+          <div class="card-icon-wrap">
+            <img src="{{ url_for('static', filename='assets/icons/gauge.svg') }}" width="24" height="24" alt="" style="filter:invert(0.85) sepia(1) saturate(3) hue-rotate(140deg);">
+          </div>
+          <h5 class="mb-2">Threshold Comparison</h5>
+          <p class="text-muted-custom" style="font-size:0.9rem;">See the projected level plotted directly against the region's flood threshold.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="glass-card glass-card-pad hoverable reveal h-100">
+          <div class="card-icon-wrap">
+            <img src="{{ url_for('static', filename='assets/icons/shield-check.svg') }}" width="24" height="24" alt="" style="filter:invert(0.85) sepia(1) saturate(3) hue-rotate(140deg);">
+          </div>
+          <h5 class="mb-2">Response Guidance</h5>
+          <p class="text-muted-custom" style="font-size:0.9rem;">Every result includes risk-appropriate recommended actions.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wave-divider">
+  <svg viewBox="0 0 1200 48" preserveAspectRatio="none">
+    <path d="M0 24 Q 150 44 300 24 T 600 24 T 900 24 T 1200 24"></path>
+  </svg>
+</div>
+
+<!-- ============================== RISK LEGEND ============================== -->
+<section class="section section-bg-panel">
+  <div class="container">
+    <div class="row mb-5">
+      <div class="col-lg-7 reveal">
+        <div class="eyebrow">Risk Scale</div>
+        <h2 class="section-title">Four risk tiers, one consistent scale</h2>
+        <p class="section-lead">Every prediction resolves to one of four tiers, used consistently across the dashboard, history, and result pages.</p>
+      </div>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-3">
+        <div class="glass-card glass-card-pad hoverable reveal h-100">
+          <span class="risk-badge risk-low mb-3"><span class="dot"></span> Low</span>
+          <p class="text-muted-custom" style="font-size:0.88rem;">Water level comfortably below threshold. Routine monitoring only.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="glass-card glass-card-pad hoverable reveal h-100">
+          <span class="risk-badge risk-moderate mb-3"><span class="dot"></span> Moderate</span>
+          <p class="text-muted-custom" style="font-size:0.88rem;">Rising trend detected. Increase monitoring frequency.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="glass-card glass-card-pad hoverable reveal h-100">
+          <span class="risk-badge risk-high mb-3"><span class="dot"></span> High</span>
+          <p class="text-muted-custom" style="font-size:0.88rem;">Approaching threshold. Prepare response resources now.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="glass-card glass-card-pad hoverable reveal h-100">
+          <span class="risk-badge risk-severe mb-3"><span class="dot"></span> Severe</span>
+          <p class="text-muted-custom" style="font-size:0.88rem;">Threshold exceeded or imminent. Escalate immediately.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== CTA ============================== -->
+<section class="section">
+  <div class="container">
+    <div class="glass-card glass-card-pad reveal-scale" style="background: linear-gradient(135deg, rgba(33,199,192,0.12), rgba(33,199,192,0.02)); text-align:center; padding: var(--space-xl);">
+      <h2 class="section-title mb-3">Ready to check a region's flood risk?</h2>
+      <p class="section-lead mx-auto mb-4" style="text-align:center;">It takes under a minute to enter a rainfall reading and get a full risk breakdown.</p>
+      <a href="/predict" class="btn btn-primary-glow btn-lg-custom">Run a Prediction</a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

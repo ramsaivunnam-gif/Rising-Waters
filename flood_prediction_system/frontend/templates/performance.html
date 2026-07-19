@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Model Performance — FloodSense{% endblock %}
+{% block meta_description %}Classifier and regressor performance metrics for the flood prediction models, including accuracy, precision, recall, R², and feature importance.{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+  <div class="container">
+
+    <div class="row mb-4">
+      <div class="col-lg-8 anim-fade-up">
+        <div class="eyebrow">Model Transparency</div>
+        <h1 class="section-title">How well does the model actually perform?</h1>
+        <p class="section-lead">Metrics below are computed on a held-out test split, not the training data — this is what to expect from real predictions.</p>
+      </div>
+    </div>
+
+    <!-- Top metric cards -->
+    <div class="row g-4 mb-4">
+      <div class="col-6 col-lg-3">
+        <div class="glass-card stat-card hoverable anim-fade-up">
+          <div class="stat-value" id="metricAccuracy">—</div>
+          <div class="stat-label">Classifier Accuracy</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="glass-card stat-card hoverable anim-fade-up">
+          <div class="stat-value" id="metricPrecision">—</div>
+          <div class="stat-label">Precision</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="glass-card stat-card hoverable anim-fade-up">
+          <div class="stat-value" id="metricR2">—</div>
+          <div class="stat-label">Regressor R² Score</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="glass-card stat-card hoverable anim-fade-up">
+          <div class="stat-value" id="metricMAE">—</div>
+          <div class="stat-label">Regressor MAE (m)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <!-- Classification metrics chart -->
+      <div class="col-lg-6 anim-fade-up">
+        <div class="glass-card glass-card-pad h-100">
+          <h6 class="text-muted-custom mb-3" style="font-family: var(--font-mono); font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase;">Classifier Metrics</h6>
+          <canvas id="performanceMetricsChart" height="260"></canvas>
+        </div>
+      </div>
+
+      <!-- Confusion matrix -->
+      <div class="col-lg-6 anim-fade-up">
+        <div class="glass-card glass-card-pad h-100">
+          <h6 class="text-muted-custom mb-3" style="font-family: var(--font-mono); font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase;">Confusion Matrix</h6>
+          <div class="row g-2 text-center" id="confusionMatrixGrid">
+            <div class="col-6">
+              <div class="glass-card glass-card-pad-sm" style="background: rgba(52,211,153,0.1); border-color: rgba(52,211,153,0.3);">
+                <div class="stat-value" style="font-size:1.6rem;" id="cmTN">—</div>
+                <div class="stat-label">True Negative</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="glass-card glass-card-pad-sm" style="background: rgba(245,185,66,0.1); border-color: rgba(245,185,66,0.3);">
+                <div class="stat-value" style="font-size:1.6rem;" id="cmFP">—</div>
+                <div class="stat-label">False Positive</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="glass-card glass-card-pad-sm" style="background: rgba(255,122,89,0.1); border-color: rgba(255,122,89,0.3);">
+                <div class="stat-value" style="font-size:1.6rem;" id="cmFN">—</div>
+                <div class="stat-label">False Negative</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="glass-card glass-card-pad-sm" style="background: rgba(33,199,192,0.1); border-color: rgba(33,199,192,0.3);">
+                <div class="stat-value" style="font-size:1.6rem;" id="cmTP">—</div>
+                <div class="stat-label">True Positive</div>
+              </div>
+            </div>
+          </div>
+          <p class="form-hint mt-3 mb-0">Rows/columns represent predicted vs. actual flood occurrence on the test set.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature importance -->
+    <div class="row g-4">
+      <div class="col-lg-8 anim-fade-up">
+        <div class="glass-card glass-card-pad">
+          <h6 class="text-muted-custom mb-3" style="font-family: var(--font-mono); font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase;">Feature Importance</h6>
+          <canvas id="featureImportanceChart" height="220"></canvas>
+        </div>
+      </div>
+      <div class="col-lg-4 anim-fade-up">
+        <div class="glass-card glass-card-pad h-100">
+          <div class="card-icon-wrap">
+            <img src="{{ url_for('static', filename='assets/icons/cpu.svg') }}" width="22" height="22" alt="" style="filter:invert(0.85) sepia(1) saturate(3) hue-rotate(140deg);">
+          </div>
+          <h5>Reading this page</h5>
+          <p class="text-muted-custom" style="font-size:0.88rem;">
+            Feature importance shows which inputs move the model's decisions
+            most. Monsoon rainfall dominates, which matches the underlying
+            hydrology — most flood events are monsoon-driven.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    const data = await window.FloodCharts.initPerformanceCharts({
+      metrics: "performanceMetricsChart",
+      features: "featureImportanceChart",
+    });
+
+    if (data) {
+      document.getElementById("metricAccuracy").textContent = Math.round(data.classification.accuracy * 100) + "%";
+      document.getElementById("metricPrecision").textContent = Math.round(data.classification.precision * 100) + "%";
+      document.getElementById("metricR2").textContent = data.regression.r2.toFixed(2);
+      document.getElementById("metricMAE").textContent = data.regression.mae.toFixed(2);
+
+      document.getElementById("cmTP").textContent = data.confusion.tp;
+      document.getElementById("cmFP").textContent = data.confusion.fp;
+      document.getElementById("cmFN").textContent = data.confusion.fn;
+      document.getElementById("cmTN").textContent = data.confusion.tn;
+    }
+  });
+</script>
+{% endblock %}

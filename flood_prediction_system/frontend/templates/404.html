@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Page Not Found — FloodSense{% endblock %}
+{% block meta_description %}The page you're looking for has drifted out of reach.{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+  <div class="container text-center" style="padding: 4rem 0;">
+    <img src="{{ url_for('static', filename='assets/images/404-flood-illustration.svg') }}" alt="Illustration of a 404 message partially submerged in a stylized wave" class="hero-illustration anim-fade-up mb-4" style="max-width:360px;">
+
+    <div class="eyebrow mx-auto" style="justify-content:center;">Error 404</div>
+    <h1 class="section-title">This page went under.</h1>
+    <p class="section-lead mx-auto mb-4" style="text-align:center;">
+      The page you're looking for doesn't exist, moved, or the link is out of date.
+      Here's how to get back to solid ground.
+    </p>
+
+    <div class="d-flex flex-wrap justify-content-center gap-3">
+      <a href="/" class="btn btn-primary-glow btn-lg-custom">Back to Home</a>
+      <a href="/predict" class="btn btn-ghost-custom btn-lg-custom">Run a Prediction</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

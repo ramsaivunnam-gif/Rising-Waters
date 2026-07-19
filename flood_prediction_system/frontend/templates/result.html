@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Prediction Result — FloodSense{% endblock %}
+{% block meta_description %}Your flood risk prediction result: risk tier, probability, projected water level, and recommended actions.{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+  <div class="container">
+
+    <!-- Shown while no result is found in sessionStorage -->
+    <div id="noResultState" class="text-center" style="display:none; padding: 4rem 0;">
+      <div class="eyebrow mx-auto" style="justify-content:center;">No Prediction Found</div>
+      <h1 class="section-title">Nothing to show yet</h1>
+      <p class="section-lead mx-auto" style="text-align:center;">Run a prediction first and we'll bring you straight back here with the result.</p>
+      <a href="/predict" class="btn btn-primary-glow btn-lg-custom mt-3">Go to Predict</a>
+    </div>
+
+    <!-- Populated by JS from sessionStorage -->
+    <div id="resultState" style="display:none;">
+      <div class="row mb-4 align-items-end">
+        <div class="col-lg-8 anim-fade-up">
+          <div class="eyebrow">Prediction Result</div>
+          <h1 class="section-title mb-1" id="resultSubdivisionTitle">—</h1>
+          <p class="section-lead" id="resultTimestamp">—</p>
+        </div>
+        <div class="col-lg-4 text-lg-end anim-fade-up">
+          <a href="/predict" class="btn btn-ghost-custom">Run Another Prediction</a>
+        </div>
+      </div>
+
+      <div id="demoNotice" class="glass-card glass-card-pad-sm mb-4 anim-fade-up" style="display:none; border-color: rgba(245,185,66,0.35);">
+        <span class="risk-badge risk-moderate"><span class="dot"></span> Offline Demo Estimate</span>
+        <span class="text-muted-custom" style="font-size:0.85rem; margin-left: 0.5rem;">The prediction API wasn't reachable, so this result was computed locally using the same rainfall-to-risk logic as the model.</span>
+      </div>
+
+      <div class="row g-4">
+        <!-- Gauge -->
+        <div class="col-lg-4 anim-scale-in">
+          <div class="glass-card glass-card-pad text-center h-100 d-flex flex-column justify-content-center">
+            <div id="resultGaugeContainer"></div>
+            <div class="gauge-reading">
+              <span class="value" id="resultWaterLevelValue">0.0</span>
+              <span class="unit">m</span>
+            </div>
+            <div class="mt-2" id="resultRiskBadge"></div>
+          </div>
+        </div>
+
+        <!-- Details -->
+        <div class="col-lg-8">
+          <div class="row g-4">
+            <div class="col-sm-6">
+              <div class="glass-card stat-card hoverable anim-fade-up">
+                <div class="stat-value" id="statFloodProbability">0%</div>
+                <div class="stat-label">Flood Probability</div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="glass-card stat-card hoverable anim-fade-up">
+                <div class="stat-value" id="statThreshold">0.0m</div>
+                <div class="stat-label">Regional Flood Threshold</div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="glass-card stat-card hoverable anim-fade-up">
+                <div class="stat-value" id="statAnnualInput">0mm</div>
+                <div class="stat-label">Annual Rainfall Input</div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="glass-card stat-card hoverable anim-fade-up">
+                <div class="stat-value" id="statMonsoonInput">0mm</div>
+                <div class="stat-label">Monsoon Rainfall Input</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card glass-card-pad mt-4 anim-fade-up">
+            <h5 class="mb-3">
+              <img src="{{ url_for('static', filename='assets/icons/shield-check.svg') }}" width="18" height="18" alt="" style="filter:invert(0.85) sepia(1) saturate(3) hue-rotate(140deg); vertical-align:-3px; margin-right:6px;">
+              Recommended Actions
+            </h5>
+            <ul id="recommendationsList" style="padding-left: 1.2rem; font-size: 0.92rem; color: var(--color-text-muted);"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script>
+  (function () {
+    "use strict";
+
+    const RISK_META = {
+      LOW: { label: "Low Risk", class: "risk-low", color: "#34D399" },
+      MODERATE: { label: "Moderate Risk", class: "risk-moderate", color: "#F5B942" },
+      HIGH: { label: "High Risk", class: "risk-high", color: "#FF7A59" },
+      SEVERE: { label: "Severe Risk", class: "risk-severe", color: "#E8425A" },
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const raw = sessionStorage.getItem("floodPredictionResult");
+      const noResultEl = document.getElementById("noResultState");
+      const resultEl = document.getElementById("resultState");
+
+      if (!raw) {
+        noResultEl.style.display = "block";
+        return;
+      }
+
+      let result;
+      try {
+        result = JSON.parse(raw);
+      } catch (e) {
+        noResultEl.style.display = "block";
+        return;
+      }
+
+      resultEl.style.display = "block";
+
+      const meta = RISK_META[result.flood_risk] || RISK_META.LOW;
+
+      document.getElementById("resultSubdivisionTitle").textContent =
+        (result.subdivision || "Unknown Region").replace(/\b\w/g, (c) => c.toUpperCase());
+      document.getElementById("resultTimestamp").textContent = result.generated_at
+        ? "Generated " + new Date(result.generated_at).toLocaleString()
+        : "";
+
+      if (result.is_demo) {
+        document.getElementById("demoNotice").style.display = "block";
+      }
+
+      document.getElementById("resultWaterLevelValue").textContent =
+        Number(result.predicted_water_level_m).toFixed(2);
+      document.getElementById("statFloodProbability").textContent =
+        Math.round(result.flood_probability * 100) + "%";
+      document.getElementById("statThreshold").textContent =
+        Number(result.flood_threshold_m).toFixed(1) + "m";
+      document.getElementById("statAnnualInput").textContent =
+        (result.input ? result.input.annual_rainfall : 0) + "mm";
+      document.getElementById("statMonsoonInput").textContent =
+        (result.input ? result.input.monsoon_rainfall : 0) + "mm";
+
+      document.getElementById("resultRiskBadge").innerHTML =
+        `<span class="risk-badge ${meta.class}"><span class="dot"></span> ${meta.label}</span>`;
+
+      const list = document.getElementById("recommendationsList");
+      list.innerHTML = "";
+      (result.recommendations || []).forEach((rec) => {
+        const li = document.createElement("li");
+        li.className = "mb-2";
+        li.textContent = rec;
+        list.appendChild(li);
+      });
+
+      if (window.FloodCharts) {
+        window.FloodCharts.renderGauge(
+          document.getElementById("resultGaugeContainer"),
+          Number(result.predicted_water_level_m),
+          Number(result.flood_threshold_m)
+        );
+      }
+    });
+  })();
+</script>
+{% endblock %}

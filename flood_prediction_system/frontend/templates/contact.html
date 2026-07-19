@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}Contact — FloodSense{% endblock %}
+{% block meta_description %}Get in touch with the FloodSense team about the flood prediction system, data, or partnership inquiries.{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+  <div class="container">
+
+    <div class="row mb-5">
+      <div class="col-lg-8 anim-fade-up">
+        <div class="eyebrow">Get in Touch</div>
+        <h1 class="section-title">Questions, data, or partnership ideas?</h1>
+        <p class="section-lead">Send a message and we'll get back to you. This demo form validates and confirms locally — wire it to your mail service in production.</p>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-7 contact-form-col anim-fade-up">
+        <div class="glass-card glass-card-pad">
+          <form id="contactForm" novalidate>
+            <div class="row">
+              <div class="col-sm-6 mb-3">
+                <label class="form-label-custom" for="contactName">Full Name</label>
+                <input type="text" class="form-control form-control-custom" id="contactName" name="name" placeholder="Jordan Rivers" required>
+                <div class="invalid-feedback-custom">Enter your name.</div>
+              </div>
+              <div class="col-sm-6 mb-3">
+                <label class="form-label-custom" for="contactEmail">Email Address</label>
+                <input type="email" class="form-control form-control-custom" id="contactEmail" name="email" placeholder="you@example.com" required>
+                <div class="invalid-feedback-custom">Enter a valid email address.</div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label-custom" for="contactSubject">Subject</label>
+              <select class="form-select form-select-custom" id="contactSubject" name="subject" required>
+                <option value="" selected disabled>Select a topic…</option>
+                <option value="general">General Question</option>
+                <option value="data">Data & Dataset Inquiry</option>
+                <option value="partnership">Partnership / Collaboration</option>
+                <option value="bug">Report an Issue</option>
+                <option value="other">Other</option>
+              </select>
+              <div class="invalid-feedback-custom">Select a subject.</div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label-custom" for="contactMessage">Message</label>
+              <textarea class="form-control form-control-custom" id="contactMessage" name="message" rows="5" placeholder="Tell us what's on your mind…" required minlength="10"></textarea>
+              <div class="invalid-feedback-custom">Message should be at least 10 characters.</div>
+            </div>
+
+            <button type="submit" class="btn btn-primary-glow btn-lg-custom w-100" id="contactSubmitBtn">
+              Send Message
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="col-lg-5 contact-info-col anim-fade-up">
+        <div class="glass-card glass-card-pad mb-4">
+          <div class="card-icon-wrap">
+            <img src="{{ url_for('static', filename='assets/icons/mail.svg') }}" width="22" height="22" alt="" style="filter:invert(0.85) sepia(1) saturate(3) hue-rotate(140deg);">
+          </div>
+          <h6 class="text-muted-custom" style="font-family: var(--font-mono); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em;">Email</h6>
+          <p class="mb-0">contact@floodsense.example</p>
+        </div>
+
+        <div class="glass-card glass-card-pad mb-4">
+          <div class="card-icon-wrap">
+            <img src="{{ url_for('static', filename='assets/icons/phone.svg') }}" width="22" height="22" alt="" style="filter:invert(0.85) sepia(1) saturate(3) hue-rotate(140deg);">
+          </div>
+          <h6 class="text-muted-custom" style="font-family: var(--font-mono); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em;">Phone</h6>
+          <p class="mb-0">+91 00000 00000</p>
+        </div>
+
+        <div class="glass-card glass-card-pad">
+          <div class="card-icon-wrap">
+            <img src="{{ url_for('static', filename='assets/icons/location-pin.svg') }}" width="22" height="22" alt="" style="filter:invert(0.85) sepia(1) saturate(3) hue-rotate(140deg);">
+          </div>
+          <h6 class="text-muted-custom" style="font-family: var(--font-mono); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em;">Region Focus</h6>
+          <p class="mb-0">India — 10 monitored subdivisions</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  (function () {
+    "use strict";
+
+    function validateContactForm(form) {
+      let isValid = true;
+
+      const name = form.elements["name"];
+      if (window.FormValidation.isEmpty(name.value)) {
+        window.FormValidation.showError(name, "Enter your name.");
+        isValid = false;
+      } else {
+        window.FormValidation.clearError(name);
+      }
+
+      const email = form.elements["email"];
+      if (!window.FormValidation.isValidEmail(email.value)) {
+        window.FormValidation.showError(email, "Enter a valid email address.");
+        isValid = false;
+      } else {
+        window.FormValidation.clearError(email);
+      }
+
+      const subject = form.elements["subject"];
+      if (window.FormValidation.isEmpty(subject.value)) {
+        window.FormValidation.showError(subject, "Select a subject.");
+        isValid = false;
+      } else {
+        window.FormValidation.clearError(subject);
+      }
+
+      const message = form.elements["message"];
+      if (message.value.trim().length < 10) {
+        window.FormValidation.showError(message, "Message should be at least 10 characters.");
+        isValid = false;
+      } else {
+        window.FormValidation.clearError(message);
+      }
+
+      return isValid;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("contactForm");
+      const submitBtn = document.getElementById("contactSubmitBtn");
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!validateContactForm(form)) {
+          window.showToast("Please fix the highlighted fields.", "error");
+          return;
+        }
+
+        const originalLabel = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-custom" style="margin-right:8px;vertical-align:-3px;"></span> Sending…';
+
+        const payload = {
+          name: form.elements["name"].value,
+          email: form.elements["email"].value,
+          subject: form.elements["subject"].value,
+          message: form.elements["message"].value,
+        };
+
+        // Attempt to reach a backend contact endpoint; fall back to a
+        // clearly-labeled local confirmation if it's not implemented yet.
+        const response = await window.FloodAPI.post("/contact", payload);
+
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalLabel;
+
+        if (response.ok) {
+          window.showToast("Message sent — we'll be in touch soon.", "success");
+        } else {
+          window.showToast("Message captured locally (contact API not connected yet).", "info", 5000);
+        }
+
+        form.reset();
+        form.querySelectorAll(".is-valid-custom").forEach((el) => el.classList.remove("is-valid-custom"));
+      });
+    });
+  })();
+</script>
+{% endblock %}
